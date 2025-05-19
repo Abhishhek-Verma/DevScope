@@ -30,7 +30,7 @@ DevScope integrates with GitHub to fetch your contribution data and visualizes i
 - 🌐 **Public Portfolio Generator**  
   - Route: `/u/:username`  
   - Includes GitHub avatar, stats, AI summary  
-  - Shareable and exportable to PDF/Markdown
+  - Shareable and exportable to PDF/Markdown.
 
 ---
 
