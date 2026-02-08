@@ -1,0 +1,12 @@
+
+project_id = "sbldeqfcxosqmothabmy"
+[api]
+enabled = true
+port = 54321
+[db]
+port = 54322
+[functions]
+port = 9999
+[[functions.function]]
+name = "generate-summary"
+verify_jwt = false
