@@ -87,8 +87,10 @@ export default function Portfolio() {
       try {
         // Fetch public user data with authentication to avoid rate limits
         const headers: HeadersInit = {};
-        if (githubToken) {
-          headers['Authorization'] = `token ${githubToken}`;
+        // Use logged-in user's token OR fallback to public token from env
+        const tokenToUse = githubToken || import.meta.env.VITE_GITHUB_PUBLIC_TOKEN;
+        if (tokenToUse) {
+          headers['Authorization'] = `token ${tokenToUse}`;
         }
         
         const userRes = await fetch(`https://api.github.com/users/${username}`, { headers });
