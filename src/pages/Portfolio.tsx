@@ -50,6 +50,30 @@ import { AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useGitHubData } from "@/hooks/useGitHubData";
 
+// Language colors for public profile display
+const LANGUAGE_COLORS: Record<string, string> = {
+  JavaScript: "#f7df1e",
+  TypeScript: "#3178c6",
+  Python: "#3572A5",
+  Java: "#b07219",
+  "C#": "#178600",
+  Go: "#00ADD8",
+  Ruby: "#701516",
+  PHP: "#4F5D95",
+  HTML: "#e34c26",
+  CSS: "#563d7c",
+  Dart: "#00B4AB",
+  Swift: "#F05138",
+  Kotlin: "#A97BFF",
+  Rust: "#DEA584",
+  C: "#555555",
+  "C++": "#f34b7d",
+  Shell: "#89e051",
+  Vue: "#41B883",
+  Jupyter: "#DA5B0B",
+  Other: "#6e7781"
+};
+
 export default function Portfolio() {
   const { username } = useParams<{ username: string }>();
   const { user, githubToken } = useAuth();
@@ -81,7 +105,6 @@ export default function Portfolio() {
     async function fetchPublicData() {
       if (!isViewingOthersProfile || !username) return;
       
-      console.log('[DEBUG] Fetching public data for:', username);
       setIsLoadingPublic(true);
       setPublicError(null);
       
@@ -90,7 +113,6 @@ export default function Portfolio() {
         const headers: HeadersInit = {};
         // Use logged-in user's token OR fallback to public token from env
         const tokenToUse = githubToken || import.meta.env.VITE_GITHUB_PUBLIC_TOKEN;
-        console.log('[DEBUG] Using token:', tokenToUse ? 'Token available' : 'No token');
         if (tokenToUse) {
           headers['Authorization'] = `token ${tokenToUse}`;
         }
@@ -105,7 +127,6 @@ export default function Portfolio() {
           throw new Error(`Failed to fetch user data: ${userRes.statusText}`);
         }
         const userData = await userRes.json();
-        console.log('[DEBUG] User data fetched:', userData.login, 'Public repos:', userData.public_repos);
         setPublicUserData(userData);
         
         // Fetch public repositories
@@ -117,7 +138,6 @@ export default function Portfolio() {
           throw new Error('Failed to fetch repositories');
         }
         const repos = await reposRes.json();
-        console.log('[DEBUG] Total repos fetched:', repos.length);
         
         // Filter out forks and add required fields
         const activeRepos = repos
@@ -128,10 +148,8 @@ export default function Portfolio() {
             contributions: 0
           }));
         
-        console.log('[DEBUG] Active (non-fork) repos:', activeRepos.length);
         setPublicRepos(activeRepos);
       } catch (err: any) {
-        console.error('[DEBUG] Error fetching public data:', err.message);
         setPublicError(err.message);
       } finally {
         setIsLoadingPublic(false);
@@ -181,7 +199,7 @@ export default function Portfolio() {
       .map(([name, count]) => ({
         name,
         value: Math.round((count / total) * 100),
-        color: '#8b5cf6' // Default color
+        color: LANGUAGE_COLORS[name] || '#6e7781'
       }))
       .sort((a, b) => b.value - a.value);
   };
@@ -432,10 +450,12 @@ export default function Portfolio() {
 
             {/* Tabs Section */}
             <Tabs defaultValue="projects" className="mb-8">
-              <TabsList className="mb-6 grid w-full grid-cols-3">
+              <TabsList className={`mb-6 grid w-full ${isViewingOthersProfile ? 'grid-cols-2' : 'grid-cols-3'}`}>
                 <TabsTrigger value="projects">Projects</TabsTrigger>
                 <TabsTrigger value="skills">Skills & Technologies</TabsTrigger>
-                <TabsTrigger value="contributions">GitHub Contributions</TabsTrigger>
+                {!isViewingOthersProfile && (
+                  <TabsTrigger value="contributions">GitHub Contributions</TabsTrigger>
+                )}
               </TabsList>
               
               {/* Projects Tab */}
