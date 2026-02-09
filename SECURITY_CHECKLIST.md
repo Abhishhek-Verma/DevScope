@@ -57,7 +57,7 @@ npm install -g supabase
 supabase login
 
 # Link your project
-supabase link --project-ref ibzdcrcgzeewjhpxztwh
+supabase link --project-ref your-project-ref
 
 # Run migrations
 supabase db push
@@ -67,7 +67,7 @@ supabase db push
 
 Create a `.env` file with your actual credentials:
 ```env
-VITE_SUPABASE_URL=https://ibzdcrcgzeewjhpxztwh.supabase.co
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your_actual_anon_key_here
 VITE_GEMINI_API_KEY=your_actual_gemini_key_here
 ```
@@ -119,7 +119,7 @@ Update GitHub OAuth App callback URL:
 2. Edit your OAuth app
 3. Update **Authorization callback URL**:
    ```
-   https://ibzdcrcgzeewjhpxztwh.supabase.co/auth/v1/callback
+   https://your-project-id.supabase.co/auth/v1/callback
    ```
 
 ---

@@ -179,7 +179,7 @@ monthly_stats (8 fields) - Historical statistics
 
 Create `.env` file (NOT in git):
 ```env
-VITE_SUPABASE_URL=https://ibzdcrcgzeewjhpxztwh.supabase.co
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your_actual_supabase_anon_key
 VITE_GEMINI_API_KEY=your_actual_gemini_api_key
 ```

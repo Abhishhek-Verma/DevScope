@@ -66,7 +66,7 @@ You'll get a URL like: `https://your-site-12345.netlify.app`
 ### Get Supabase Keys:
 1. Go to: https://app.supabase.com/
 2. Select project → **Settings** → **API**
-3. **Copy** "Project URL" (e.g., `https://ibzdcrcgzeewjhpxztwh.supabase.co`)
+3. **Copy** "Project URL" (e.g., `https://your-project-id.supabase.co`)
 4. **Copy** "anon public" key (click Reveal)
 
 ### Add to Netlify:
@@ -75,7 +75,7 @@ You'll get a URL like: `https://your-site-12345.netlify.app`
 
 **Variable 1:**
 - Key: `VITE_SUPABASE_URL`
-- Value: `https://ibzdcrcgzeewjhpxztwh.supabase.co`
+- Value: `https://your-project-id.supabase.co` (paste your actual URL)
 
 **Variable 2:**
 - Key: `VITE_SUPABASE_ANON_KEY`
@@ -83,7 +83,7 @@ You'll get a URL like: `https://your-site-12345.netlify.app`
 
 **Variable 3:**
 - Key: `VITE_GEMINI_API_KEY`
-- Value: `AIzaSyByuLsR_uD-dlRECMY9QxftuHsMQweUahg`
+- Value: `your_gemini_api_key_here` (get from https://aistudio.google.com/app/apikey)
 
 ### Redeploy:
 1. Go to **"Deploys"** tab

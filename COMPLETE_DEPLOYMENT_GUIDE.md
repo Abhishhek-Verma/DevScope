@@ -16,7 +16,7 @@
 
 1. Go to: **https://app.supabase.com/**
 2. **Login** with your account
-3. **Select your project** (the one with URL: `ibzdcrcgzeewjhpxztwh.supabase.co`)
+3. **Select your project**
 
 ---
 
@@ -155,7 +155,7 @@ https://your-site-name-12345.netlify.app
 3. Click **"Settings"** (gear icon in sidebar)
 4. Click **"API"**
 5. Look for **"Project URL"**
-6. **Copy** the URL (looks like: `https://ibzdcrcgzeewjhpxztwh.supabase.co`)
+6. **Copy** the URL (looks like: `https://your-project-id.supabase.co`)
 
 ### Get VITE_SUPABASE_ANON_KEY:
 
@@ -172,7 +172,7 @@ https://your-site-name-12345.netlify.app
 
 1. Click **"Add a variable"**
 2. **Key**: `VITE_SUPABASE_URL`
-3. **Value**: Paste your Supabase URL (e.g., `https://ibzdcrcgzeewjhpxztwh.supabase.co`)
+3. **Value**: Paste your Supabase URL (e.g., `https://your-project-id.supabase.co`)
 4. **Scopes**: Select all scopes
 5. Click **"Create variable"**
 
@@ -188,7 +188,7 @@ https://your-site-name-12345.netlify.app
 
 1. Click **"Add a variable"** again
 2. **Key**: `VITE_GEMINI_API_KEY`
-3. **Value**: Paste your Gemini API key (e.g., `AIzaSyByuLsR_uD-dlRECMY9QxftuHsMQweUahg`)
+3. **Value**: Paste your Gemini API key (get from https://aistudio.google.com/app/apikey)
 4. **Scopes**: Select all scopes
 5. Click **"Create variable"**
 
@@ -251,7 +251,7 @@ After adding all 3 variables:
 3. **Homepage URL**: Your Netlify URL
 4. **Authorization callback URL**: Keep as Supabase callback:
    ```
-   https://ibzdcrcgzeewjhpxztwh.supabase.co/auth/v1/callback
+   https://your-project-id.supabase.co/auth/v1/callback
    ```
 5. Click **"Update application"**
 
