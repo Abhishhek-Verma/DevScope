@@ -52,7 +52,7 @@ import { useGitHubData } from "@/hooks/useGitHubData";
 
 export default function Portfolio() {
   const { username } = useParams<{ username: string }>();
-  const { user } = useAuth();
+  const { user, githubToken } = useAuth();
   
   // State for public portfolio data
   const [publicUserData, setPublicUserData] = useState<any>(null);
@@ -85,16 +85,29 @@ export default function Portfolio() {
       setPublicError(null);
       
       try {
-        // Fetch public user data
-        const userRes = await fetch(`https://api.github.com/users/${username}`);
+        // Fetch public user data with authentication to avoid rate limits
+        const headers: HeadersInit = {};
+        if (githubToken) {
+          headers['Authorization'] = `token ${githubToken}`;
+        }
+        
+        const userRes = await fetch(`https://api.github.com/users/${username}`, { headers });
         if (!userRes.ok) {
-          throw new Error(`User ${username} not found`);
+          if (userRes.status === 404) {
+            throw new Error(`GitHub user "${username}" not found. Please check the username in the URL.`);
+          } else if (userRes.status === 403) {
+            throw new Error('GitHub API rate limit exceeded. Please try again later or log in for higher limits.');
+          }
+          throw new Error(`Failed to fetch user data: ${userRes.statusText}`);
         }
         const userData = await userRes.json();
         setPublicUserData(userData);
         
         // Fetch public repositories
-        const reposRes = await fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=updated`);
+        const reposRes = await fetch(
+          `https://api.github.com/users/${username}/repos?per_page=100&sort=updated`,
+          { headers }
+        );
         if (!reposRes.ok) {
           throw new Error('Failed to fetch repositories');
         }
@@ -118,7 +131,7 @@ export default function Portfolio() {
     }
     
     fetchPublicData();
-  }, [username, isViewingOthersProfile]);
+  }, [username, isViewingOthersProfile, githubToken]);
   
   // Use public data if viewing someone else's profile
   const displayUserData = isViewingOthersProfile ? publicUserData : userData;
