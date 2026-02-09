@@ -53,6 +53,17 @@ import { useGitHubData } from "@/hooks/useGitHubData";
 export default function Portfolio() {
   const { username } = useParams<{ username: string }>();
   const { user } = useAuth();
+  
+  // State for public portfolio data
+  const [publicUserData, setPublicUserData] = useState<any>(null);
+  const [publicRepos, setPublicRepos] = useState<any[]>([]);
+  const [isLoadingPublic, setIsLoadingPublic] = useState(false);
+  const [publicError, setPublicError] = useState<string | null>(null);
+  
+  // If viewing someone else's portfolio (username in URL), fetch their public data
+  const isViewingOthersProfile = username && (!user || user.user_metadata?.user_name !== username);
+  
+  // Use either public data or authenticated data
   const { 
     userData, 
     repositories, 
@@ -60,10 +71,60 @@ export default function Portfolio() {
     contributions, 
     monthlyActivity, 
     topTopics, 
-    isLoading, 
-    error, 
+    isLoading: isLoadingAuth, 
+    error: errorAuth, 
     refetch 
   } = useGitHubData();
+  
+  // Fetch public GitHub data for the username in URL
+  useEffect(() => {
+    async function fetchPublicData() {
+      if (!isViewingOthersProfile || !username) return;
+      
+      setIsLoadingPublic(true);
+      setPublicError(null);
+      
+      try {
+        // Fetch public user data
+        const userRes = await fetch(`https://api.github.com/users/${username}`);
+        if (!userRes.ok) {
+          throw new Error(`User ${username} not found`);
+        }
+        const userData = await userRes.json();
+        setPublicUserData(userData);
+        
+        // Fetch public repositories
+        const reposRes = await fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=updated`);
+        if (!reposRes.ok) {
+          throw new Error('Failed to fetch repositories');
+        }
+        const repos = await reposRes.json();
+        
+        // Filter out forks and add required fields
+        const activeRepos = repos
+          .filter((repo: any) => !repo.fork)
+          .map((repo: any) => ({
+            ...repo,
+            stars: repo.stargazers_count,
+            contributions: 0
+          }));
+        
+        setPublicRepos(activeRepos);
+      } catch (err: any) {
+        setPublicError(err.message);
+      } finally {
+        setIsLoadingPublic(false);
+      }
+    }
+    
+    fetchPublicData();
+  }, [username, isViewingOthersProfile]);
+  
+  // Use public data if viewing someone else's profile
+  const displayUserData = isViewingOthersProfile ? publicUserData : userData;
+  const displayRepos = isViewingOthersProfile ? publicRepos : repositories;
+  const isLoading = isViewingOthersProfile ? isLoadingPublic : isLoadingAuth;
+  const error = isViewingOthersProfile ? publicError : errorAuth;
 
   // Animation variants
   const containerVariants = {
@@ -85,6 +146,44 @@ export default function Portfolio() {
     }
   };
 
+  // Calculate languages from displayRepos for public profiles
+  const calculatePublicLanguages = () => {
+    const languageMap: Record<string, number> = {};
+    displayRepos.forEach((repo: any) => {
+      if (repo.language) {
+        languageMap[repo.language] = (languageMap[repo.language] || 0) + 1;
+      }
+    });
+    
+    const total = Object.values(languageMap).reduce((sum, count) => sum + count, 0);
+    return Object.entries(languageMap)
+      .map(([name, count]) => ({
+        name,
+        value: Math.round((count / total) * 100),
+        color: '#8b5cf6' // Default color
+      }))
+      .sort((a, b) => b.value - a.value);
+  };
+  
+  // Calculate topics from displayRepos for public profiles
+  const calculatePublicTopics = () => {
+    const topicsCounter: Record<string, number> = {};
+    displayRepos.forEach((repo: any) => {
+      repo.topics?.forEach((topic: string) => {
+        topicsCounter[topic] = (topicsCounter[topic] || 0) + 1;
+      });
+    });
+    
+    return Object.entries(topicsCounter)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 15)
+      .map(([topic]) => topic);
+  };
+  
+  // Use calculated data for public profiles
+  const displayLanguages = isViewingOthersProfile ? calculatePublicLanguages() : languages;
+  const displayTopics = isViewingOthersProfile ? calculatePublicTopics() : topTopics;
+  
   // Determine areas of expertise based on repositories and languages
   const determineExpertiseAreas = () => {
     // Collect actual skills from repositories
@@ -93,7 +192,7 @@ export default function Portfolio() {
     const devopsSkills = new Set<string>();
     
     // Scan through repositories and topics
-    repositories.forEach(repo => {
+    displayRepos.forEach(repo => {
       // Frontend signals
       if (repo.language === 'JavaScript') frontendSkills.add('JavaScript');
       if (repo.language === 'TypeScript') frontendSkills.add('TypeScript');
@@ -194,11 +293,6 @@ export default function Portfolio() {
   
   const weekdayActivity = generateWeekdayActivity();
 
-  // Redirect to login if not authenticated
-  if (!user && !isLoading) {
-    return <Navigate to="/login" />;
-  }
-
   return (
     <PageLayout>
       <div className="container py-8">
@@ -227,75 +321,75 @@ export default function Portfolio() {
               <div className="relative z-10 p-8 flex flex-col md:flex-row items-start md:items-center gap-6">
                 <Avatar className="h-28 w-28 border-4 border-white dark:border-gray-800 shadow-xl">
                   <AvatarImage 
-                    src={userData?.avatar_url} 
+                    src={displayUserData?.avatar_url} 
                     alt={username || "User"} 
                   />
                   <AvatarFallback>{username?.substring(0, 2).toUpperCase() || "GH"}</AvatarFallback>
                 </Avatar>
                 <div className="flex-grow">
-                  <h1 className="text-3xl font-bold">{userData?.name || username}</h1>
-                  <p className="text-xl text-muted-foreground mb-2">{userData?.bio || "GitHub Developer"}</p>
+                  <h1 className="text-3xl font-bold">{displayUserData?.name || username}</h1>
+                  <p className="text-xl text-muted-foreground mb-2">{displayUserData?.bio || "GitHub Developer"}</p>
                   <div className="flex flex-wrap items-center gap-3 mb-4">
                     <Badge variant="outline" className="gap-1 border-devscope-200 px-2 py-1">
                       <Github className="h-3 w-3" />
-                      <span>{userData?.login || username}</span>
+                      <span>{displayUserData?.login || username}</span>
                     </Badge>
-                    {userData?.location && (
+                    {displayUserData?.location && (
                       <Badge variant="outline" className="gap-1 border-devscope-200 px-2 py-1">
                         <MapPin className="h-3 w-3" />
-                        <span>{userData.location}</span>
+                        <span>{displayUserData.location}</span>
                       </Badge>
                     )}
-                    {userData?.email && (
+                    {displayUserData?.email && (
                       <Badge variant="outline" className="gap-1 border-devscope-200 px-2 py-1">
                         <Mail className="h-3 w-3" />
-                        <span>{userData.email}</span>
+                        <span>{displayUserData.email}</span>
                       </Badge>
                     )}
-                    {userData?.blog && (
+                    {displayUserData?.blog && (
                       <Badge variant="outline" className="gap-1 border-devscope-200 px-2 py-1">
                         <Globe className="h-3 w-3" />
-                        <span>{userData.blog}</span>
+                        <span>{displayUserData.blog}</span>
                       </Badge>
                     )}
                     <Badge variant="outline" className="gap-1 border-devscope-200 px-2 py-1">
                       <Calendar className="h-3 w-3" />
-                      <span>Joined {new Date(userData?.created_at || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+                      <span>Joined {new Date(displayUserData?.created_at || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
                     </Badge>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="flex items-center gap-2 bg-white/90 dark:bg-gray-800/90 rounded-lg px-3 py-2 shadow-sm">
                       <BookOpen className="h-4 w-4 text-devscope-600" />
                       <div>
-                        <div className="font-semibold">{userData?.public_repos || 0}</div>
+                        <div className="font-semibold">{displayUserData?.public_repos || 0}</div>
                         <div className="text-xs text-muted-foreground">Repositories</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 bg-white/90 dark:bg-gray-800/90 rounded-lg px-3 py-2 shadow-sm">
                       <User className="h-4 w-4 text-devscope-600" />
                       <div>
-                        <div className="font-semibold">{userData?.followers || 0}</div>
+                        <div className="font-semibold">{displayUserData?.followers || 0}</div>
                         <div className="text-xs text-muted-foreground">Followers</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 bg-white/90 dark:bg-gray-800/90 rounded-lg px-3 py-2 shadow-sm">
                       <Star className="h-4 w-4 text-devscope-600" />
                       <div>
-                        <div className="font-semibold">{repositories.reduce((sum, repo) => sum + repo.stargazers_count, 0)}</div>
+                        <div className="font-semibold">{displayRepos.reduce((sum, repo) => sum + repo.stargazers_count, 0)}</div>
                         <div className="text-xs text-muted-foreground">Stars</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 bg-white/90 dark:bg-gray-800/90 rounded-lg px-3 py-2 shadow-sm">
                       <GitHubActivity className="h-4 w-4 text-devscope-600" />
                       <div>
-                        <div className="font-semibold">{contributions.reduce((total, item) => total + item.count, 0)}</div>
+                        <div className="font-semibold">{isViewingOthersProfile ? displayRepos.length : contributions.reduce((total, item) => total + item.count, 0)}</div>
                         <div className="text-xs text-muted-foreground">Contributions</div>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-4 md:mt-0">
-                  <Button size="sm" className="gap-1" onClick={() => window.open(`https://github.com/${userData?.login || username}`, '_blank')}>
+                  <Button size="sm" className="gap-1" onClick={() => window.open(`https://github.com/${displayUserData?.login || username}`, '_blank')}>
                     <Github className="h-3.5 w-3.5" />
                     <span>Follow on GitHub</span>
                   </Button>
@@ -406,7 +500,7 @@ export default function Portfolio() {
                         </CardHeader>
                         <CardContent>
                           <div className="flex flex-wrap gap-2 mt-2">
-                            {languages.map((lang) => (
+                            {displayLanguages.map((lang) => (
                               <Badge 
                                 key={lang.name} 
                                 variant="secondary"
@@ -420,7 +514,7 @@ export default function Portfolio() {
                               </Badge>
                             ))}
                             
-                            {topTopics.map((topic) => (
+                            {displayTopics.map((topic) => (
                               <Badge 
                                 key={topic} 
                                 variant="secondary"
@@ -448,7 +542,7 @@ export default function Portfolio() {
                             <ResponsiveContainer width="100%" height="100%">
                               <PieChart>
                                 <Pie
-                                  data={languages}
+                                  data={displayLanguages}
                                   cx="50%"
                                   cy="50%"
                                   innerRadius={60}
@@ -456,7 +550,7 @@ export default function Portfolio() {
                                   paddingAngle={2}
                                   dataKey="value"
                                 >
-                                  {languages.map((entry, index) => (
+                                  {displayLanguages.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={entry.color} />
                                   ))}
                                 </Pie>
@@ -688,7 +782,7 @@ export default function Portfolio() {
                                       <div 
                                         className="h-2 w-2 rounded-full" 
                                         style={{ 
-                                          backgroundColor: languages.find(l => l.name === repo.language)?.color 
+                                          backgroundColor: displayLanguages.find(l => l.name === repo.language)?.color 
                                             || "#6e7781" 
                                         }}
                                       ></div>
