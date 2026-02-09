@@ -88,7 +88,7 @@ GitHub Stats:
 
 Create a concise, professional summary highlighting their expertise and contributions. Focus on their technical skills and development activity. Return only the summary text without any additional formatting or explanations.`;
 
-      console.log('Calling Gemini API with model: gemini-2.5-flash-lite');
+      // Security: API calls made without logging sensitive data
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: {
@@ -108,15 +108,15 @@ Create a concise, professional summary highlighting their expertise and contribu
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        console.error('Gemini API error:', response.status, errorData);
+        // Security: Only log status code, not full error data
+        console.error('Gemini API error status:', response.status);
         toast.error(`Gemini API failed (${response.status}), using local generation`);
         await generateLocalSummary();
         return;
       }
 
       const data = await response.json();
-      console.log('Gemini API response:', data);
+      // Security: Response received successfully (no sensitive data logged)
       
       if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
         console.error('Invalid Gemini API response structure:', data);

@@ -9,13 +9,13 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const handleAuthCallback = async () => {
-      console.log("Auth callback initiated");
+      // Security: Auth callback initiated (no sensitive data logged)
       
       try {
         // Get the session and detailed error information
         const { data, error } = await supabase.auth.getSession();
         
-        console.log("Auth session response:", data);
+        // Security: Never log session data as it contains sensitive tokens
         
         if (error) {
           console.error("Authentication error details:", error);
@@ -32,11 +32,7 @@ export default function AuthCallback() {
           return;
         }
         
-        console.log("User successfully authenticated:", {
-          id: data.session.user.id,
-          email: data.session.user.email,
-          metadata: data.session.user.user_metadata
-        });
+        // Security: User authenticated successfully (no sensitive data logged)
         
         // Check if token exists
         if (!data.session.access_token) {
@@ -47,13 +43,10 @@ export default function AuthCallback() {
         }
         
         toast.success("Successfully signed in with GitHub!");
-        console.log("Current origin:", window.location.origin);
-        console.log("Attempting redirect to:", `${window.location.origin}/dashboard`);
 
         // Try with a timeout to ensure other processes complete
         setTimeout(() => {
           window.location.href = `${window.location.origin}/dashboard`;
-          console.log("Redirect executed");
         }, 1000);
       } catch (error) {
         console.error("Unexpected error in auth callback:", error);
