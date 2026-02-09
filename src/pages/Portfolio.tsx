@@ -81,6 +81,7 @@ export default function Portfolio() {
     async function fetchPublicData() {
       if (!isViewingOthersProfile || !username) return;
       
+      console.log('[DEBUG] Fetching public data for:', username);
       setIsLoadingPublic(true);
       setPublicError(null);
       
@@ -89,6 +90,7 @@ export default function Portfolio() {
         const headers: HeadersInit = {};
         // Use logged-in user's token OR fallback to public token from env
         const tokenToUse = githubToken || import.meta.env.VITE_GITHUB_PUBLIC_TOKEN;
+        console.log('[DEBUG] Using token:', tokenToUse ? 'Token available' : 'No token');
         if (tokenToUse) {
           headers['Authorization'] = `token ${tokenToUse}`;
         }
@@ -103,6 +105,7 @@ export default function Portfolio() {
           throw new Error(`Failed to fetch user data: ${userRes.statusText}`);
         }
         const userData = await userRes.json();
+        console.log('[DEBUG] User data fetched:', userData.login, 'Public repos:', userData.public_repos);
         setPublicUserData(userData);
         
         // Fetch public repositories
@@ -114,6 +117,7 @@ export default function Portfolio() {
           throw new Error('Failed to fetch repositories');
         }
         const repos = await reposRes.json();
+        console.log('[DEBUG] Total repos fetched:', repos.length);
         
         // Filter out forks and add required fields
         const activeRepos = repos
@@ -124,8 +128,10 @@ export default function Portfolio() {
             contributions: 0
           }));
         
+        console.log('[DEBUG] Active (non-fork) repos:', activeRepos.length);
         setPublicRepos(activeRepos);
       } catch (err: any) {
+        console.error('[DEBUG] Error fetching public data:', err.message);
         setPublicError(err.message);
       } finally {
         setIsLoadingPublic(false);
@@ -459,9 +465,9 @@ export default function Portfolio() {
                   </motion.div>
                 </motion.div>
                 
-                {repositories.length > 0 ? (
+                {displayRepos.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {repositories.map((repo, index) => (
+                    {displayRepos.map((repo, index) => (
                       <RepositoryCard 
                         key={repo.id} 
                         repo={repo} 
@@ -772,8 +778,8 @@ export default function Portfolio() {
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
-                          {repositories.length > 0 ? (
-                            repositories
+                          {displayRepos.length > 0 ? (
+                            displayRepos
                               .sort((a, b) => b.stargazers_count - a.stargazers_count)
                               .slice(0, 6)
                               .map((repo) => (
