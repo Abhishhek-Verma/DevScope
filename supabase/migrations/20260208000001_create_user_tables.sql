@@ -7,10 +7,10 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- User Profiles Table (Extended GitHub data)
 CREATE TABLE user_profiles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    github_id TEXT UNIQUE NOT NULL,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
+    github_id TEXT,
     github_username TEXT NOT NULL,
-    github_name TEXT,
+    name TEXT,
     avatar_url TEXT,
     bio TEXT,
     location TEXT,
@@ -18,12 +18,13 @@ CREATE TABLE user_profiles (
     blog TEXT,
     company TEXT,
     twitter_username TEXT,
-    followers_count INTEGER DEFAULT 0,
-    following_count INTEGER DEFAULT 0,
-    public_repos_count INTEGER DEFAULT 0,
-    total_stars INTEGER DEFAULT 0,
-    total_commits INTEGER DEFAULT 0,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    followers INTEGER DEFAULT 0,
+    following INTEGER DEFAULT 0,
+    public_repos INTEGER DEFAULT 0,
+    public_gists INTEGER DEFAULT 0,
+    hireable BOOLEAN,
+    profile_data JSONB, -- Store complete GitHub profile response
+    created_at TEXT,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -66,17 +67,27 @@ CREATE TABLE activity_logs (
 CREATE TABLE repository_snapshots (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    github_repo_id TEXT NOT NULL,
-    repo_name TEXT NOT NULL,
+    repo_id BIGINT NOT NULL,
+    name TEXT NOT NULL,
     description TEXT,
     language TEXT,
-    stars_count INTEGER DEFAULT 0,
-    forks_count INTEGER DEFAULT 0,
+    stars INTEGER DEFAULT 0,
+    forks INTEGER DEFAULT 0,
     topics TEXT[],
+    url TEXT,
+    is_private BOOLEAN DEFAULT FALSE,
     is_fork BOOLEAN DEFAULT FALSE,
     homepage TEXT,
+    open_issues INTEGER DEFAULT 0,
+    watchers INTEGER DEFAULT 0,
+    size INTEGER DEFAULT 0,
+    default_branch TEXT,
+    license_name TEXT,
+    repo_data JSONB, -- Store complete repository response
+    created_at TEXT,
+    updated_at TEXT,
     snapshot_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    UNIQUE(user_id, repo_id)
 );
 
 -- User Monthly Stats Table (For historical tracking)
@@ -95,13 +106,14 @@ CREATE TABLE monthly_stats (
 );
 
 -- Indexes for performance
-CREATE INDEX idx_user_profiles_github_id ON user_profiles(github_id);
 CREATE INDEX idx_user_profiles_user_id ON user_profiles(user_id);
+CREATE INDEX idx_user_profiles_github_username ON user_profiles(github_username);
 CREATE INDEX idx_user_goals_user_id ON user_goals(user_id);
 CREATE INDEX idx_ai_summaries_user_id ON ai_summaries(user_id);
 CREATE INDEX idx_activity_logs_user_id ON activity_logs(user_id);
 CREATE INDEX idx_activity_logs_occurred_at ON activity_logs(occurred_at);
 CREATE INDEX idx_repository_snapshots_user_id ON repository_snapshots(user_id);
+CREATE INDEX idx_repository_snapshots_repo_id ON repository_snapshots(repo_id);
 CREATE INDEX idx_monthly_stats_user_id ON monthly_stats(user_id);
 CREATE INDEX idx_monthly_stats_year_month ON monthly_stats(year, month);
 
