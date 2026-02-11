@@ -212,10 +212,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       setGithubData(githubData);
       
-      // Store data in Supabase tables
+      // Store data in Supabase tables silently
       if (user && user.id) {
         await supabaseDataService.storeAllGitHubData(githubData, user.id);
-        toast.success("Data stored in database");
       }
       
       return githubData;
