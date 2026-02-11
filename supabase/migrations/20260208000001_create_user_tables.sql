@@ -1,8 +1,17 @@
 -- DevScope Database Schema
 -- This migration creates tables to store user data on Supabase
+-- WARNING: This will DROP existing tables and all data will be lost!
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Drop existing tables if they exist (CASCADE removes dependent objects)
+DROP TABLE IF EXISTS user_profiles CASCADE;
+DROP TABLE IF EXISTS user_goals CASCADE;
+DROP TABLE IF EXISTS ai_summaries CASCADE;
+DROP TABLE IF EXISTS activity_logs CASCADE;
+DROP TABLE IF EXISTS repository_snapshots CASCADE;
+DROP TABLE IF EXISTS monthly_stats CASCADE;
 
 -- User Profiles Table (Extended GitHub data)
 CREATE TABLE user_profiles (
