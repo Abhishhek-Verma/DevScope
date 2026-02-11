@@ -28,6 +28,14 @@ dist-ssr
 .env.local
 .env.*.local
 
+# Sensitive documentation and database schemas
+supabase/migrations/
+*MIGRATION*.md
+*STORAGE_IMPLEMENTATION*.md
+*SECURITY_AUDIT*.md
+*READY_TO_PUSH*.md
+*COMPREHENSIVE*.md
+
 # Keep example env file
 !.env.example
 
