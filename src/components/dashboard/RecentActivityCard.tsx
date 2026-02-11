@@ -64,7 +64,7 @@ export function RecentActivityCard({ isLoading }: RecentActivityCardProps) {
           setEvents(data.slice(0, 4)); // Get only the 4 most recent events
         }
       } catch (error) {
-        console.error("Error fetching GitHub events:", error);
+        // Silently fail
       } finally {
         setLoadingEvents(false);
       }

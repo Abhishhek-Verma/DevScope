@@ -3,6 +3,7 @@ import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabaseDataService } from "@/services/supabaseDataService";
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -187,16 +188,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
               });
             } else if (commitsResponse.status === 404) {
               // Repository might be private or deleted, skip it
-              console.log(`Repository ${repo.name} not accessible, skipping`);
             }
           } catch (error) {
-            console.error(`Error fetching commits for ${repo.name}:`, error);
+            // Silently skip errors
           }
         });
         
         await Promise.all(commitPromises);
       } catch (error) {
-        console.error("Error fetching commit data:", error);
+        // Silently ignore errors
       }
       
       const contributions = months.map(month => ({
@@ -211,10 +211,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
       };
       
       setGithubData(githubData);
+      
+      // Store data in Supabase tables
+      if (user && user.id) {
+        await supabaseDataService.storeAllGitHubData(githubData, user.id);
+        toast.success("Data stored in database");
+      }
+      
       return githubData;
       
     } catch (error) {
-      console.error("Error fetching GitHub data:", error);
       toast.error("Failed to fetch GitHub data");
       return null;
     } finally {
@@ -237,11 +243,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
 
       if (error) {
-        console.error("GitHub login error:", error);
         toast.error(`Login error: ${error.message}`);
       }
     } catch (error) {
-      console.error("Unexpected error during login:", error);
       toast.error("An unexpected error occurred during login");
     }
   };
@@ -251,7 +255,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        console.error("Logout error:", error);
         toast.error(`Logout error: ${error.message}`);
       } else {
         setGithubData(null);
@@ -260,7 +263,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         toast.success("Successfully logged out");
       }
     } catch (error) {
-      console.error("Unexpected error during logout:", error);
       toast.error("An unexpected error occurred during logout");
     }
   };

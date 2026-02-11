@@ -32,7 +32,7 @@ export default function AISummary() {
           setSummary(data[0].content);
         }
       } catch (error) {
-        console.error("Error loading saved summary:", error);
+        // Silently fail
       }
     }
     
@@ -73,7 +73,6 @@ export default function AISummary() {
         throw new Error("No summary returned from the API");
       }
     } catch (error) {
-      console.error("Error generating summary:", error);
       toast.error("Failed to generate AI summary");
     } finally {
       setIsGenerating(false);

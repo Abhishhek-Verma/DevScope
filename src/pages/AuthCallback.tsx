@@ -18,7 +18,6 @@ export default function AuthCallback() {
         // Security: Never log session data as it contains sensitive tokens
         
         if (error) {
-          console.error("Authentication error details:", error);
           toast.error(`Authentication error: ${error.message}`);
           navigate('/login');
           return;
@@ -26,7 +25,6 @@ export default function AuthCallback() {
         
         // Check if user is properly authenticated
         if (!data.session || !data.session.user) {
-          console.error("No valid session or user found in response");
           toast.error("GitHub authentication failed. Please try again.");
           navigate('/login');
           return;
@@ -36,7 +34,6 @@ export default function AuthCallback() {
         
         // Check if token exists
         if (!data.session.access_token) {
-          console.error("No access token in session");
           toast.error("Authentication failed: No access token");
           navigate('/login');
           return;
@@ -49,7 +46,6 @@ export default function AuthCallback() {
           window.location.href = `${window.location.origin}/dashboard`;
         }, 1000);
       } catch (error) {
-        console.error("Unexpected error in auth callback:", error);
         toast.error("An unexpected error occurred during GitHub authentication. Please try again.");
         navigate('/login');
       }

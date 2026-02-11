@@ -30,7 +30,7 @@ export function AISummary({ isLoading, githubData, userData }: AISummaryProps) {
           setSummary(savedSummary.content);
         }
       } catch (error) {
-        console.log("Error loading summary:", error);
+        // Silently fail
       }
     }
     
@@ -58,7 +58,6 @@ export function AISummary({ isLoading, githubData, userData }: AISummaryProps) {
       }
       
     } catch (error) {
-      console.error("Error generating summary:", error);
       toast.error("Failed to generate summary");
     } finally {
       setIsGenerating(false);
@@ -109,7 +108,6 @@ Create a concise, professional summary highlighting their expertise and contribu
 
       if (!response.ok) {
         // Security: Only log status code, not full error data
-        console.error('Gemini API error status:', response.status);
         toast.error(`Gemini API failed (${response.status}), using local generation`);
         await generateLocalSummary();
         return;
@@ -119,7 +117,6 @@ Create a concise, professional summary highlighting their expertise and contribu
       // Security: Response received successfully (no sensitive data logged)
       
       if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-        console.error('Invalid Gemini API response structure:', data);
         toast.error('Invalid AI response, using local generation');
         await generateLocalSummary();
         return;
@@ -131,7 +128,6 @@ Create a concise, professional summary highlighting their expertise and contribu
       toast.success("AI-powered summary generated with Gemini!");
       await saveSummaryToDatabase(generatedSummary, 'gemini', 'gemini-2.5-flash-lite');
     } catch (error) {
-      console.error('Gemini API error:', error);
       toast.error('Gemini API failed, using local generation');
       await generateLocalSummary();
     }
@@ -213,7 +209,6 @@ Create a concise, professional summary highlighting their expertise and contribu
 
   const saveSummaryToDatabase = async (content: string, type: 'gemini' | 'local', model?: string) => {
     if (!userData?.id) {
-      console.error("No user ID available to save summary");
       return;
     }
     
@@ -226,9 +221,7 @@ Create a concise, professional summary highlighting their expertise and contribu
       };
       
       await saveAISummary(summaryData);
-      console.log('Summary saved to database');
     } catch (error) {
-      console.error('Error saving summary to database:', error);
       // Don't show error toast to user - summary is still displayed
     }
   };

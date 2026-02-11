@@ -18,7 +18,7 @@ export default function Login() {
     try {
       await loginWithGitHub();
     } catch (error) {
-      console.error("GitHub login error:", error);
+      // Error handled by loginWithGitHub
     }
   };
 

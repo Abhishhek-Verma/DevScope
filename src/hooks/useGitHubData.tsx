@@ -237,10 +237,9 @@ export function useGitHubData(): UseGitHubDataResult {
             });
           } else if (commitsResponse.status === 404) {
             // Repository might be private or deleted, skip it
-            console.log(`Repository ${repo.name} not accessible, skipping`);
           }
         } catch (error) {
-          console.error(`Error fetching commits for ${repo.name}:`, error);
+          // Silently skip errors
         }
       });
 
@@ -273,7 +272,7 @@ export function useGitHubData(): UseGitHubDataResult {
           });
         }
       } catch (error) {
-        console.error("Error fetching user events:", error);
+        // Silently ignore errors
       }
 
       const processedMonthlyActivity = months.map(name => ({
@@ -320,10 +319,9 @@ export function useGitHubData(): UseGitHubDataResult {
             });
           } else if (commitsResponse.status === 404) {
             // Repository might be private or deleted, skip it
-            console.log(`Repository ${repo.name} not accessible, skipping`);
           }
         } catch (error) {
-          console.error(`Error fetching commits for ${repo.name}:`, error);
+          // Silently skip errors
         }
       }));
       
@@ -334,7 +332,6 @@ export function useGitHubData(): UseGitHubDataResult {
       setContributions(realContributions);
 
     } catch (err) {
-      console.error("Error fetching GitHub data:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch GitHub data");
       toast.error("Failed to load GitHub data. Please try again.");
     } finally {

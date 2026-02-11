@@ -88,7 +88,6 @@ export function GoalsTab() {
           setGoalsData(loadedGoals);
         }
       } catch (error) {
-        console.error('Error loading goals from database:', error);
         toast.error('Failed to load goals');
       } finally {
         setIsLoadingGoals(false);
@@ -117,7 +116,6 @@ export function GoalsTab() {
       
       await saveUserGoals(user.id, dbGoals);
     } catch (error) {
-      console.error('Error saving goals to database:', error);
       toast.error('Failed to save goals');
     }
   };
